@@ -1,12 +1,17 @@
-from . import db
 import os
 from typing import Dict, Any, List
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical
-from textual.widgets import Header, Footer, Static, DataTable, Label, Slider
+from textual.widgets import Header, Footer, Static, DataTable, Label, ProgressBar
 from textual.binding import Binding
+from rich.syntax import Syntax
+from . import db
 
 class PyChronicleApp(App):
+    """
+    Terminal User Interface for PyChronicle Time-Travel Debugger.
+    Provides code visualizer, timeline scrubbing (using ProgressBar), and variable state viewer.
+    """
     CSS = """
     Screen {
         background: $background;
@@ -61,7 +66,7 @@ class PyChronicleApp(App):
         text-style: bold;
         color: $accent;
     }
-    #timeline-slider {
+    #timeline-progress {
         width: 70%;
     }
     #info-label {
@@ -79,12 +84,6 @@ class PyChronicleApp(App):
         Binding("down,j", "last_step", "Last Step", show=True),
         Binding("q", "quit", "Quit", show=True),
     ]
-
-    def __init__(self, db_path: str, run_id: int, script_path: str):
-        super().__init__()
-        self.db_path = db_path
-        self.run_id = run_id
-        self.script_path = os.path.abspath(script_path)
 
     def __init__(self, db_path: str, run_id: int, script_path: str):
         super().__init__()
@@ -122,9 +121,9 @@ class PyChronicleApp(App):
             t.border_title = "Execution Scrubber"
             yield Label("Step 0 / 0", id="step-label")
             if self.total_steps > 1:
-                yield Slider(min=1, max=self.total_steps, value=1, id="timeline-slider")
+                yield ProgressBar(total=self.total_steps, show_percentage=False, id="timeline-progress")
             else:
-                yield Label("[No execution steps recorded]", id="timeline-slider")
+                yield Label("[No execution steps recorded]", id="timeline-progress")
             yield Label("Line: --", id="info-label")
         yield Footer()
 
@@ -152,9 +151,8 @@ class PyChronicleApp(App):
         code_container.border_title = f"Source Code - {os.path.basename(self.script_path)} [in {func_name}()]"
 
         try:
-            slider = self.query_one("#timeline-slider", Slider)
-            if slider.value != step_number:
-                slider.value = step_number
+            progress_bar = self.query_one("#timeline-progress", ProgressBar)
+            progress_bar.progress = step_number
         except Exception:
             pass
 
@@ -178,13 +176,6 @@ class PyChronicleApp(App):
             
         for var_name, var_info in sorted(display_vars.items()):
             table.add_row(var_name, var_info["type"], var_info["value"])
-
-    def on_slider_changed(self, event: Slider.Changed) -> None:
-        step_val = int(event.value)
-        idx = step_val - 1
-        if 0 <= idx < self.total_steps and idx != self.current_step_idx:
-            self.current_step_idx = idx
-            self.update_step_ui()
 
     def action_step_forward(self) -> None:
         if self.current_step_idx < self.total_steps - 1:
