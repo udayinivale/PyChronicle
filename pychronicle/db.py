@@ -49,3 +49,29 @@ def init_db(db_path: str):
         conn.commit()
     finally:
         conn.close()
+
+def create_run(db_path: str, script_path: str) -> int:
+    started_at = time.strftime("%Y-%m-%d %H:%M:%S")
+    conn = get_connection(db_path)
+    try:
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO runs (script_path, started_at) VALUES (?, ?)", (script_path, started_at))
+        conn.commit()
+        return cursor.lastrowid
+    finally:
+        conn.close()
+
+def insert_step(db_path: str, run_id: int, step_number: int, line_number: int, 
+                function_name: str, event: str, timestamp: float) -> int:
+    conn = get_connection(db_path)
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """INSERT INTO steps (run_id, step_number, line_number, function_name, event, timestamp)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (run_id, step_number, line_number, function_name, event, timestamp)
+        )
+        conn.commit()
+        return cursor.lastrowid
+    finally:
+        conn.close()
