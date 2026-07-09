@@ -34,6 +34,18 @@ def init_db(db_path: str):
                 FOREIGN KEY(run_id) REFERENCES runs(run_id) ON DELETE CASCADE
             );
         """)
+        # Table to store variable state mutations (deltas)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS variable_states (
+                state_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                step_id INTEGER NOT NULL,
+                variable_name TEXT NOT NULL,
+                variable_type TEXT NOT NULL,
+                serialized_value TEXT NOT NULL,
+                is_delta INTEGER DEFAULT 1,
+                FOREIGN KEY(step_id) REFERENCES steps(step_id) ON DELETE CASCADE
+            );
+        """)
         conn.commit()
     finally:
         conn.close()
