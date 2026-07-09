@@ -30,6 +30,19 @@ class PyChronicleApp(App):
         border-title-color: $accent;
         height: 1fr;
         background: $boost;
+        layout: vertical;
+    }
+    #vars-table {
+        height: 60%;
+    }
+    #history-container {
+        border-top: solid $primary-background-lighten-2;
+        height: 40%;
+        overflow: scroll scroll;
+        background: $boost;
+    }
+    #history-view {
+        padding: 0 1;
     }
     #timeline-container {
         height: auto;
@@ -102,6 +115,9 @@ class PyChronicleApp(App):
             with Container(id="vars-container") as v:
                 v.border_title = "Variable Inspector (f_locals)"
                 yield DataTable(id="vars-table")
+                with Container(id="history-container") as hc:
+                    hc.border_title = "Variable History Timeline"
+                    yield Static("Select a variable above to view its mutation history.", id="history-view")
         with Horizontal(id="timeline-container") as t:
             t.border_title = "Execution Scrubber"
             yield Label("Step 0 / 0", id="step-label")
@@ -189,3 +205,27 @@ class PyChronicleApp(App):
         if self.total_steps > 0:
             self.current_step_idx = self.total_steps - 1
             self.update_step_ui()
+
+    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+        try:
+            row_values = event.data_table.get_row(event.row_key)
+            var_name = row_values[0]
+            
+            history = db.get_variable_history(self.db_path, self.run_id, var_name)
+            
+            from rich.text import Text
+            
+            text = Text()
+            text.append(f"History of '{var_name}':\n", style="bold yellow")
+            
+            if not history:
+                text.append("No mutations recorded (variable is undefined or static).", style="italic red")
+            else:
+                for h in history:
+                    text.append(f"\n• Step {h['step_number']} (Line {h['line_number']}): ", style="cyan")
+                    text.append(f"{h['serialized_value']}", style="green")
+                    text.append(f" [type: {h['variable_type']}]", style="dim text-muted")
+                    
+            self.query_one("#history-view", Static).update(text)
+        except Exception as e:
+            self.query_one("#history-view", Static).update(f"Error loading history: {e}")
