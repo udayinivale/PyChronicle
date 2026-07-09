@@ -7,6 +7,33 @@ from typing import Dict, Any, Tuple, List, Optional
 from . import db
 
 class PyChronicleTracer:
+    def serialize_value(self, val: Any) -> Tuple[str, str]:
+        val_type = type(val).__name__
+        try:
+            if isinstance(val, (int, float, str, bool, type(None))):
+                return json.dumps(val), val_type
+            elif isinstance(val, (list, dict, tuple, set)):
+                serialized = json.dumps(self._make_serializable(val))
+                if len(serialized) > 5000:
+                    return serialized[:5000] + "... [truncated]", val_type
+                return serialized, val_type
+            else:
+                return repr(val), val_type
+        except Exception as e:
+            return f"<Unserializable {val_type}: {str(e)}>", val_type
+
+    def _make_serializable(self, obj: Any) -> Any:
+        if isinstance(obj, (int, float, str, bool, type(None))):
+            return obj
+        elif isinstance(obj, dict):
+            return {str(k): self._make_serializable(v) for k, v in obj.items()}
+        elif isinstance(obj, (list, tuple)):
+            return [self._make_serializable(x) for x in obj]
+        elif isinstance(obj, set):
+            return [self._make_serializable(x) for x in list(obj)]
+        else:
+            return repr(obj)
+
     def __init__(self, script_path: str, db_path: str):
         self.script_path = os.path.abspath(script_path)
         self.db_path = db_path
