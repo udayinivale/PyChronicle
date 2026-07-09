@@ -39,11 +39,13 @@ class PyChronicleTracer:
         self.db_path = db_path
         self.run_id = None
         self.step_number = 0
+        self.frame_locals_cache: Dict[int, Dict[str, Any]] = {}
         db.init_db(self.db_path)
 
     def trace_execution(self):
         self.run_id = db.create_run(self.db_path, self.script_path)
         self.step_number = 0
+        self.frame_locals_cache: Dict[int, Dict[str, Any]] = {}
 
         with open(self.script_path, "r", encoding="utf-8") as f:
             source = f.read()
@@ -80,6 +82,45 @@ class PyChronicleTracer:
                     event,
                     timestamp
                 )
+                
+                frame_id = id(frame)
+                current_locals = {}
+                for k, v in frame.f_locals.items():
+                    if k.startswith("__") or k == "sys" or k == "os" or k == "_pychronicle_trace_locals":
+                        continue
+                    current_locals[k] = v
+
+                prev_locals = self.frame_locals_cache.get(frame_id, {})
+                deltas = []
+                for k, v in current_locals.items():
+                    serialized_val, val_type = self.serialize_value(v)
+                    is_changed = False
+                    if k not in prev_locals:
+                        is_changed = True
+                    else:
+                        prev_serialized, _ = self.serialize_value(prev_locals[k])
+                        if prev_serialized != serialized_val:
+                            is_changed = True
+                    if is_changed:
+                        deltas.append((k, val_type, serialized_val))
+
+                for k in prev_locals:
+                    if k not in current_locals:
+                        deltas.append((k, "NoneType", "None [deleted]"))
+
+                if deltas:
+                    db.insert_variable_states(self.db_path, step_id, deltas)
+
+                cached_locals = {}
+                for k, v in current_locals.items():
+                    try:
+                        cached_locals[k] = copy.deepcopy(v)
+                    except Exception:
+                        cached_locals[k] = copy.copy(v)
+                self.frame_locals_cache[frame_id] = cached_locals
+
+                if event == "return" and frame_id in self.frame_locals_cache:
+                    del self.frame_locals_cache[frame_id]
             return local_trace
 
         original_trace = sys.gettrace()
