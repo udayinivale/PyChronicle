@@ -162,3 +162,30 @@ class PyChronicleApp(App):
             
         for var_name, var_info in sorted(display_vars.items()):
             table.add_row(var_name, var_info["type"], var_info["value"])
+
+    def on_slider_changed(self, event: Slider.Changed) -> None:
+        step_val = int(event.value)
+        idx = step_val - 1
+        if 0 <= idx < self.total_steps and idx != self.current_step_idx:
+            self.current_step_idx = idx
+            self.update_step_ui()
+
+    def action_step_forward(self) -> None:
+        if self.current_step_idx < self.total_steps - 1:
+            self.current_step_idx += 1
+            self.update_step_ui()
+
+    def action_step_backward(self) -> None:
+        if self.current_step_idx > 0:
+            self.current_step_idx -= 1
+            self.update_step_ui()
+
+    def action_first_step(self) -> None:
+        if self.total_steps > 0:
+            self.current_step_idx = 0
+            self.update_step_ui()
+
+    def action_last_step(self) -> None:
+        if self.total_steps > 0:
+            self.current_step_idx = self.total_steps - 1
+            self.update_step_ui()
