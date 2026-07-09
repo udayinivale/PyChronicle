@@ -102,4 +102,63 @@ class PyChronicleApp(App):
             with Container(id="vars-container") as v:
                 v.border_title = "Variable Inspector (f_locals)"
                 yield DataTable(id="vars-table")
+        with Horizontal(id="timeline-container") as t:
+            t.border_title = "Execution Scrubber"
+            yield Label("Step 0 / 0", id="step-label")
+            if self.total_steps > 1:
+                yield Slider(min=1, max=self.total_steps, value=1, id="timeline-slider")
+            else:
+                yield Label("[No execution steps recorded]", id="timeline-slider")
+            yield Label("Line: --", id="info-label")
         yield Footer()
+
+    def on_mount(self) -> None:
+        table = self.query_one("#vars-table", DataTable)
+        table.cursor_type = "row"
+        table.add_columns("Variable", "Type", "Value")
+        self.update_step_ui()
+
+    def update_step_ui(self) -> None:
+        if not self.steps:
+            self.query_one("#code-view", Static).update("No steps to display.")
+            return
+
+        step = self.steps[self.current_step_idx]
+        step_number = step["step_number"]
+        line_number = step["line_number"]
+        event = step["event"]
+        func_name = step["function_name"]
+
+        self.query_one("#step-label", Label).update(f"Step {step_number} / {self.total_steps}")
+        self.query_one("#info-label", Label).update(f"Line {line_number} ({event})")
+        
+        code_container = self.query_one("#code-container")
+        code_container.border_title = f"Source Code - {os.path.basename(self.script_path)} [in {func_name}()]"
+
+        try:
+            slider = self.query_one("#timeline-slider", Slider)
+            if slider.value != step_number:
+                slider.value = step_number
+        except Exception:
+            pass
+
+        from rich.syntax import Syntax
+        syntax = Syntax(self.source_code, "python", theme="monokai", line_numbers=True, highlight_lines={line_number})
+        self.query_one("#code-view", Static).update(syntax)
+        
+        code_container.scroll_to(y=max(0, line_number - 10), animate=False)
+        self.populate_variables(step["step_id"])
+
+    def populate_variables(self, step_id: int) -> None:
+        table = self.query_one("#vars-table", DataTable)
+        table.clear()
+        
+        var_states = db.get_variable_states_at_step(self.db_path, step_id)
+        display_vars = {}
+        for var in self.static_vars:
+            display_vars[var] = {"type": "N/A", "value": "<undefined>"}
+        for var_name, var_info in var_states.items():
+            display_vars[var_name] = var_info
+            
+        for var_name, var_info in sorted(display_vars.items()):
+            table.add_row(var_name, var_info["type"], var_info["value"])
