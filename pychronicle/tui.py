@@ -1,3 +1,4 @@
+from . import db
 import os
 from typing import Dict, Any, List
 from textual.app import App, ComposeResult
@@ -71,6 +72,26 @@ class PyChronicleApp(App):
         self.db_path = db_path
         self.run_id = run_id
         self.script_path = os.path.abspath(script_path)
+
+    def __init__(self, db_path: str, run_id: int, script_path: str):
+        super().__init__()
+        self.db_path = db_path
+        self.run_id = run_id
+        self.script_path = os.path.abspath(script_path)
+        
+        with open(self.script_path, "r", encoding="utf-8") as f:
+            self.source_code = f.read()
+            
+        self.steps = db.get_run_steps(self.db_path, self.run_id)
+        self.total_steps = len(self.steps)
+        self.current_step_idx = 0
+
+        try:
+            from . import ast_analyzer
+            analysis = ast_analyzer.analyze_script(self.script_path)
+            self.static_vars = analysis["assigned_variables"]
+        except Exception:
+            self.static_vars = []
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
