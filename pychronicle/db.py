@@ -75,3 +75,49 @@ def insert_step(db_path: str, run_id: int, step_number: int, line_number: int,
         return cursor.lastrowid
     finally:
         conn.close()
+
+def insert_variable_states(db_path: str, step_id: int, variables: List[Tuple[str, str, str]]):
+    if not variables:
+        return
+    conn = get_connection(db_path)
+    try:
+        conn.executemany(
+            "INSERT INTO variable_states (step_id, variable_name, variable_type, serialized_value, is_delta) VALUES (?, ?, ?, ?, 1)",
+            [(step_id, name, v_type, val) for name, v_type, val in variables]
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+def get_run_steps(db_path: str, run_id: int) -> List[Dict[str, Any]]:
+    conn = get_connection(db_path)
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM steps WHERE run_id = ? ORDER BY step_number ASC", (run_id,))
+        return [dict(row) for row in cursor.fetchall()]
+    finally:
+        conn.close()
+
+def get_variable_states_at_step(db_path: str, step_id: int) -> Dict[str, Dict[str, str]]:
+    conn = get_connection(db_path)
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT vs.variable_name, vs.variable_type, vs.serialized_value
+            FROM variable_states vs
+            INNER JOIN (
+                SELECT variable_name, MAX(step_id) as max_step_id
+                FROM variable_states
+                WHERE step_id <= ?
+                GROUP BY variable_name
+            ) latest ON vs.variable_name = latest.variable_name AND vs.step_id = latest.max_step_id
+            """,
+            (step_id,)
+        )
+        return {
+            row["variable_name"]: {"type": row["variable_type"], "value": row["serialized_value"]}
+            for row in cursor.fetchall()
+        }
+    finally:
+        conn.close()
