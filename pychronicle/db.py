@@ -46,6 +46,10 @@ def init_db(db_path: str):
                 FOREIGN KEY(step_id) REFERENCES steps(step_id) ON DELETE CASCADE
             );
         """)
+        # Create indexes for performance
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_steps_run ON steps(run_id, step_number);")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_var_states_step ON variable_states(step_id);")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_var_states_lookup ON variable_states(variable_name, step_id);")
         conn.commit()
     finally:
         conn.close()
@@ -56,6 +60,10 @@ def create_run(db_path: str, script_path: str) -> int:
     try:
         cursor = conn.cursor()
         cursor.execute("INSERT INTO runs (script_path, started_at) VALUES (?, ?)", (script_path, started_at))
+        # Create indexes for performance
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_steps_run ON steps(run_id, step_number);")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_var_states_step ON variable_states(step_id);")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_var_states_lookup ON variable_states(variable_name, step_id);")
         conn.commit()
         return cursor.lastrowid
     finally:
@@ -71,6 +79,10 @@ def insert_step(db_path: str, run_id: int, step_number: int, line_number: int,
                VALUES (?, ?, ?, ?, ?, ?)""",
             (run_id, step_number, line_number, function_name, event, timestamp)
         )
+        # Create indexes for performance
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_steps_run ON steps(run_id, step_number);")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_var_states_step ON variable_states(step_id);")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_var_states_lookup ON variable_states(variable_name, step_id);")
         conn.commit()
         return cursor.lastrowid
     finally:
@@ -85,6 +97,10 @@ def insert_variable_states(db_path: str, step_id: int, variables: List[Tuple[str
             "INSERT INTO variable_states (step_id, variable_name, variable_type, serialized_value, is_delta) VALUES (?, ?, ?, ?, 1)",
             [(step_id, name, v_type, val) for name, v_type, val in variables]
         )
+        # Create indexes for performance
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_steps_run ON steps(run_id, step_number);")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_var_states_step ON variable_states(step_id);")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_var_states_lookup ON variable_states(variable_name, step_id);")
         conn.commit()
     finally:
         conn.close()
@@ -119,5 +135,40 @@ def get_variable_states_at_step(db_path: str, step_id: int) -> Dict[str, Dict[st
             row["variable_name"]: {"type": row["variable_type"], "value": row["serialized_value"]}
             for row in cursor.fetchall()
         }
+    finally:
+        conn.close()
+
+def delete_run(db_path: str, run_id: int):
+    conn = get_connection(db_path)
+    try:
+        conn.execute("PRAGMA foreign_keys = ON;")
+        conn.execute("DELETE FROM runs WHERE run_id = ?", (run_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+def optimize_db(db_path: str):
+    conn = get_connection(db_path)
+    try:
+        conn.execute("PRAGMA optimize;")
+        conn.commit()
+    finally:
+        conn.close()
+
+def get_variable_history(db_path: str, run_id: int, variable_name: str) -> List[Dict[str, Any]]:
+    conn = get_connection(db_path)
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT s.step_number, s.line_number, vs.serialized_value, vs.variable_type, s.timestamp
+            FROM variable_states vs
+            INNER JOIN steps s ON vs.step_id = s.step_id
+            WHERE s.run_id = ? AND vs.variable_name = ?
+            ORDER BY s.step_number ASC
+            """,
+            (run_id, variable_name)
+        )
+        return [dict(row) for row in cursor.fetchall()]
     finally:
         conn.close()
