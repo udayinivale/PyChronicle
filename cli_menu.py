@@ -7,21 +7,30 @@ def display_menu():
     print("5. Exit")
     print("=====================================")
 
-def handle_choice(choice):
-    if choice == "1":
+
+def process_choice(choice):
+    if choice == 1:
         print("\nRunning Trace...")
-    elif choice == "2":
-        print("\nViewing Trace...")
-    elif choice == "3":
+    elif choice == 2:
+        print("\nOpening Trace Viewer...")
+    elif choice == 3:
         print("\nReplaying Trace...")
-    elif choice == "4":
-        print("\nHelp:")
+    elif choice == 4:
+        print("\nHelp")
         print("Choose an option from 1 to 5.")
-    elif choice == "5":
-        print("\nExiting PyChronicle...")
-    else:
-        print("\nInvalid choice!")
+    elif choice == 5:
+        print("\nThank you for using PyChronicle!")
+
 
 display_menu()
-choice = input("Enter your choice: ")
-handle_choice(choice)
+
+try:
+    choice = int(input("Enter your choice (1-5): "))
+
+    if 1 <= choice <= 5:
+        process_choice(choice)
+    else:
+        print("Error: Please enter a number between 1 and 5.")
+
+except ValueError:
+    print("Error: Invalid input. Please enter numbers only.")
