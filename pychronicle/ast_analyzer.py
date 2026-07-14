@@ -1,4 +1,5 @@
 import ast
+from platform import node
 from typing import Set, Dict, List, Any
 
 
@@ -10,11 +11,19 @@ class AssignmentFinder(ast.NodeVisitor):
     def _add_assignment(self, name: str):
         if name.isidentifier() and not name.startswith("__"):
             self.assigned_vars.add(name)
+    
+    def _parse_target(self, target: ast.AST):
+        if isinstance(target, ast.Name):
+            self._add_assignment(target.id)
+
+        elif isinstance(target, (ast.Tuple, ast.List)):
+            for element in target.elts:
+                self._parse_target(element)
 
     def visit_Assign(self, node: ast.Assign):
+
         for target in node.targets:
-            if isinstance(target, ast.Name):
-                self._add_assignment(target.id)
+            self._parse_target(target)
 
         self.generic_visit(node)
 
