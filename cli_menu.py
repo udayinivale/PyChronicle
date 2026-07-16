@@ -14,35 +14,52 @@ def display_menu():
 
 def get_choice():
     while True:
-        try:
-            choice = int(input("\nSelect an option (1-5): "))
+        user_input = input("\nSelect an option (1-5): ").strip()
 
-            if 1 <= choice <= 5:
-                print(f"You selected option {choice}")
-                return choice
-            else:
-                print("Please enter a number between 1 and 5.")
+        if user_input == "":
+            print("Error: Input cannot be empty.")
+            continue
 
-        except ValueError:
-            print("Invalid input! Please enter numbers only.")
+        if not user_input.isdigit():
+            print("Error: Please enter numbers only.")
+            continue
+
+        choice = int(user_input)
+
+        if 1 <= choice <= 5:
+            print(f"You selected option {choice}")
+            return choice
+        else:
+            print("Error: Please enter a number between 1 and 5.")
+
+def process_choice(choice):
+    if choice == 1:
+        print("\nRunning Trace...")
+        print("Please wait while the trace is being generated.")
+
+    elif choice == 2:
+        print("\nOpening Trace Viewer...")
+        print("Loading saved execution trace...")
+
+    elif choice == 3:
+        print("\nReplaying Trace...")
+        print("Preparing replay...")
+
+    elif choice == 4:
+        print("\nHelp")
+        print("Choose an option from 1 to 5.")
+        print("Follow the instructions displayed on the screen.")
+
+    elif choice == 5:
+        print("\nThank you for using PyChronicle!")
+        return False
+
+    return True
 
 
-if choice == 1:
-    print("\nRunning Trace...")
-    print("Please wait while the trace is being generated.")
+running = True
 
-elif choice == 2:
-    print("\nOpening Trace Viewer...")
-    print("Loading saved execution trace...")
-
-elif choice == 3:
-    print("\nReplaying Trace...")
-    print("Preparing replay...")
-
-elif choice == 4:
-    print("\nHelp")
-    print("Choose an option from 1 to 5.")
-    print("Follow the instructions displayed on the screen.")
-
-elif choice == 5:
-    print("\nThank you for using PyChronicle!")
+while running:
+    display_menu()
+    choice = get_choice()
+    running = process_choice(choice)
