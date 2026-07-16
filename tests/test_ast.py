@@ -27,7 +27,17 @@ class TestAST(unittest.TestCase):
 
         self.assertIn("first", result["assigned_variables"])
         self.assertIn("second", result["assigned_variables"])
+    def test_annotated_assignment(self):
 
+        result = analyze_script("example.py")
+
+        self.assertIn("age", result["assigned_variables"])
+
+    def test_annotated_assignment(self):
+
+        result = analyze_script("example.py")
+
+        self.assertIn("age", result["assigned_variables"])
 
 if __name__ == "__main__":
     unittest.main()

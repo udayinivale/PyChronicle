@@ -27,6 +27,16 @@ class AssignmentFinder(ast.NodeVisitor):
 
         self.generic_visit(node)
 
+    def visit_AnnAssign(self, node: ast.AnnAssign):
+        """
+        Handles annotated assignments.
+        Example:
+            age: int = 20
+        """
+        self._parse_target(node.target)
+        self.generic_visit(node)
+
+
 
 def analyze_script(file_path: str) -> Dict[str, Any]:
 
