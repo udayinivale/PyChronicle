@@ -1,14 +1,16 @@
+from rich import print
 def display_menu():
-    print("\n========== PyChronicle ==========")
-    print("Welcome to PyChronicle!")
-    print("Please select an option:\n")
+    print("\n[bold cyan]========== PyChronicle ==========[/bold cyan]")
+    print("[green]Welcome to PyChronicle![/green]")
+    print("[yellow]Please select an option:[/yellow]\n")
 
-    print("1. Run Trace")
-    print("2. View Trace")
-    print("3. Replay Trace")
-    print("4. Help")
-    print("5. Exit")
+    print("[blue]1.[/blue] Run Trace")
+    print("[blue]2.[/blue] View Trace")
+    print("[blue]3.[/blue] Replay Trace")
+    print("[blue]4.[/blue] Help")
+    print("[red]5.[/red] Exit")
 
+    print("[bold cyan]=================================[/bold cyan]")
     print("=================================")
 
 
@@ -34,28 +36,22 @@ def get_choice():
 
 def process_choice(choice):
     if choice == 1:
-        print("\nRunning Trace...")
-        print("Please wait while the trace is being generated.")
+        print("Running Trace...")
 
     elif choice == 2:
-        print("\nOpening Trace Viewer...")
-        print("Loading saved execution trace...")
+        print("Opening Trace Viewer...")
 
     elif choice == 3:
-        print("\nReplaying Trace...")
-        print("Preparing replay...")
+        print("Replaying Trace...")
 
     elif choice == 4:
-        print("\nHelp")
-        print("Choose an option from 1 to 5.")
-        print("Follow the instructions displayed on the screen.")
+        print("Help")
 
     elif choice == 5:
-        print("\nThank you for using PyChronicle!")
+        print("Thank you for using PyChronicle!")
         return False
 
     return True
-
 
 running = True
 
