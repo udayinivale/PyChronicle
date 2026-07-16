@@ -36,7 +36,14 @@ class AssignmentFinder(ast.NodeVisitor):
         self._parse_target(node.target)
         self.generic_visit(node)
 
-
+    def visit_AugAssign(self, node: ast.AugAssign):
+        """
+        Handles augmented assignments.
+        Example:
+            total += 10
+        """
+        self._parse_target(node.target)
+        self.generic_visit(node)
 
 def analyze_script(file_path: str) -> Dict[str, Any]:
 

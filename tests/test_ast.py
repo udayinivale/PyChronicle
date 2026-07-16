@@ -39,5 +39,11 @@ class TestAST(unittest.TestCase):
 
         self.assertIn("age", result["assigned_variables"])
 
+    def test_augmented_assignment(self):
+
+        result = analyze_script("example.py")
+
+        self.assertIn("total", result["assigned_variables"])
+    
 if __name__ == "__main__":
     unittest.main()

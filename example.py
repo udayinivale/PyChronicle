@@ -9,5 +9,6 @@ age: int = 22
 
 total = x + y
 
+total += 10
 
 print(total)
