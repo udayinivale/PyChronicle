@@ -5,6 +5,9 @@ PyChronicle is an AST-powered time-travel debugger for Python. It records script
 ## Requirements
 
 - Python 3.8+
+- AST (Abstract Syntax Tree)
+- unittest
+- Git & GitHub
 
 ## Features
 
