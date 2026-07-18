@@ -1,11 +1,10 @@
-from pychronicle.ast_analyzer import analyze_script
+from pychronicle.tracer import PyChronicleTracer
 
-result = analyze_script("example.py")
+tracer = PyChronicleTracer(
+    "example.py",
+    "pychronicle.db"
+)
 
-print("\nVariables")
-print(result["assigned_variables"])
+tracer.trace_execution()
 
-print("\nAssignments by line")
-
-for line, variables in result["line_assignments"].items():
-    print(f"Line {line}: {variables}")
+print("Tracing completed.")

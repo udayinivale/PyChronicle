@@ -1,14 +1,6 @@
 x = 10
 y = 20
 
-a, b = 1, 2
+z = x + y
 
-[first, second] = [100, 200]
-
-age: int = 22
-
-total = x + y
-
-total += 10
-
-print(total)
+print(z)
