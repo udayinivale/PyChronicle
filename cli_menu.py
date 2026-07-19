@@ -1,18 +1,22 @@
 from rich import print
 
 def display_menu():
+    options = [
+        "1. Run Trace",
+        "2. View Trace",
+        "3. Replay Trace",
+        "4. Help",
+        "5. Exit"
+    ]
+
     print("\n[bold cyan]========== PyChronicle ==========[/bold cyan]")
     print("[green]Welcome to PyChronicle![/green]")
     print("[yellow]Please select an option:[/yellow]\n")
 
-    print("[blue]1.[/blue] Run Trace")
-    print("[blue]2.[/blue] View Trace")
-    print("[blue]3.[/blue] Replay Trace")
-    print("[blue]4.[/blue] Help")
-    print("[red]5.[/red] Exit")
+    for option in options:
+        print(option)
 
     print("[bold cyan]=================================[/bold cyan]")
-
 
 def get_choice():
     while True:
