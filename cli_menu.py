@@ -9,14 +9,14 @@ def display_menu():
         "5. Exit"
     ]
 
-    print("\n[bold cyan]========== PyChronicle ==========[/bold cyan]")
-    print("[green]Welcome to PyChronicle![/green]")
-    print("[yellow]Please select an option:[/yellow]\n")
+    print("\n" + "=" * 40)
+    print("         PYCHRONICLE")
+    print("=" * 40)
 
     for option in options:
         print(option)
 
-    print("[bold cyan]=================================[/bold cyan]")
+    print("=" * 40)
 
 def get_choice():
     while True:
