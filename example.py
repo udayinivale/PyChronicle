@@ -1,10 +1,6 @@
 x = 10
 y = 20
 
-a, b = 1, 2
+z = x + y
 
-[first, second] = [100, 200]
-
-total = x + y
-
-print(total)
+print(z)

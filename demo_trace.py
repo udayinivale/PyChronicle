@@ -1,5 +1,10 @@
-from pychronicle.ast_analyzer import analyze_script
+from pychronicle.tracer import PyChronicleTracer
 
-result = analyze_script("example.py")
+tracer = PyChronicleTracer(
+    "example.py",
+    "pychronicle.db"
+)
 
-print(result)
+tracer.trace_execution()
+
+print("Tracing completed.")
