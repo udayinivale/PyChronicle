@@ -1,4 +1,5 @@
 from rich import print
+
 def display_menu():
     print("\n[bold cyan]========== PyChronicle ==========[/bold cyan]")
     print("[green]Welcome to PyChronicle![/green]")
@@ -11,7 +12,6 @@ def display_menu():
     print("[red]5.[/red] Exit")
 
     print("[bold cyan]=================================[/bold cyan]")
-    print("=================================")
 
 
 def get_choice():
@@ -34,6 +34,7 @@ def get_choice():
         else:
             print("Error: Please enter a number between 1 and 5.")
 
+
 def process_choice(choice):
     if choice == 1:
         print("Running Trace...")
@@ -48,10 +49,16 @@ def process_choice(choice):
         print("Help")
 
     elif choice == 5:
-        print("Thank you for using PyChronicle!")
-        return False
+        confirm = input("Are you sure you want to exit? (y/n): ").lower()
+
+        if confirm == "y":
+            print("Thank you for using PyChronicle!")
+            return False
+        else:
+            print("Returning to menu...")
 
     return True
+
 
 running = True
 
