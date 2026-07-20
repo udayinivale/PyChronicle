@@ -1,0 +1,57 @@
+{
+    "run": {
+        "run_id": 7,
+        "script_path": "C:\\Users\\victus\\Documents\\GitHub\\PyChronicle\\example.py",
+        "started_at": "2026-07-18 19:49:57"
+    },
+    "steps": [
+        {
+            "step_number": 1,
+            "line_number": 1
+        },
+        {
+            "step_number": 2,
+            "line_number": 2
+        },
+        {
+            "step_number": 3,
+            "line_number": 4
+        },
+        {
+            "step_number": 4,
+            "line_number": 6
+        }
+    ],
+    "variables": [
+        {
+            "step_number": 2,
+            "name": "x",
+            "value": "10"
+        },
+        {
+            "step_number": 3,
+            "name": "x",
+            "value": "10"
+        },
+        {
+            "step_number": 3,
+            "name": "y",
+            "value": "20"
+        },
+        {
+            "step_number": 4,
+            "name": "x",
+            "value": "10"
+        },
+        {
+            "step_number": 4,
+            "name": "y",
+            "value": "20"
+        },
+        {
+            "step_number": 4,
+            "name": "z",
+            "value": "30"
+        }
+    ]
+}

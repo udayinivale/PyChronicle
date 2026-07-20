@@ -6,48 +6,66 @@ from pychronicle.viewer import (
 
 DB = "pychronicle.db"
 
-print("=" * 40)
-print("        PYCHRONICLE VIEWER")
-print("=" * 40)
 
-runs = get_runs(DB)
+def show_runs():
+    runs = get_runs(DB)
 
-print("\nAvailable Runs\n")
+    print("\nAvailable Runs\n")
 
-for run in runs:
-    print(
-        f"Run ID : {run[0]}"
-    )
-    print(
-        f"Script : {run[1]}"
-    )
-    print(
-        f"Time   : {run[2]}"
-    )
-    print("-" * 40)
+    for run in runs:
+        print(f"Run ID : {run[0]}")
+        print(f"Script : {run[1]}")
+        print(f"Time   : {run[2]}")
+        print("-" * 40)
 
-run_id = int(input("\nEnter Run ID: "))
 
-steps = get_execution_steps(DB, run_id)
+def show_steps(run_id):
+    steps = get_execution_steps(DB, run_id)
 
-print("\nExecution Steps\n")
+    print("\nExecution Steps\n")
 
-for step in steps:
-    print(
-        f"Step {step[0]}  ->  Line {step[1]}"
-    )
+    for step in steps:
+        print(f"Step {step[0]} -> Line {step[1]}")
 
-step_number = int(
-    input("\nEnter Step Number: ")
-)
 
-variables = get_variables(
-    DB,
-    run_id,
-    step_number
-)
+def show_variables(run_id, step):
+    variables = get_variables(DB, run_id, step)
 
-print("\nVariables\n")
+    print("\nVariables\n")
 
-for name, value in variables:
-    print(f"{name} = {value}")
+    if not variables:
+        print("No variables found.")
+        return
+
+    for name, value in variables:
+        print(f"{name} = {value}")
+
+
+while True:
+
+    print("\n========== PYCHRONICLE ==========")
+    print("1. View Runs")
+    print("2. Exit")
+
+    choice = input("Enter Choice: ")
+
+    if choice == "1":
+
+        show_runs()
+
+        run_id = int(input("\nEnter Run ID: "))
+
+        show_steps(run_id)
+
+        step = int(input("\nEnter Step Number: "))
+
+        show_variables(run_id, step)
+
+    elif choice == "2":
+
+        print("Goodbye!")
+        break
+
+    else:
+
+        print("Invalid Choice")
