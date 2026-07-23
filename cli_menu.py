@@ -6,7 +6,7 @@ from rich.console import Console
 console = Console()
 
 def display_menu():
-    # Week 3 Day 2 Formatting: Rich Table Layout
+    
     table = Table(
         title="PYCHRONICLE UI", 
         title_style="bold cyan", 
