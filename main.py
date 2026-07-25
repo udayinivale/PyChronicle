@@ -1,54 +1,82 @@
+from pychronicle.ui import (
+    show_title,
+    show_menu,
+    show_message
+)
+
 from pychronicle.viewer import (
     get_runs,
     get_execution_steps,
     get_variables
 )
 
-from pychronicle.exporter import export_to_json
 from pychronicle.replay import replay_trace
+from pychronicle.exporter import export_to_json
 
 DB = "pychronicle.db"
 
 
-def show_runs():
-
-    runs = get_runs(DB)
-
-    print("\nAvailable Runs\n")
-
-    for run in runs:
-        print(f"Run ID : {run[0]}")
-        print(f"Script : {run[1]}")
-        print(f"Time   : {run[2]}")
-        print("-" * 40)
-
-
 while True:
 
-    print("\n========== PYCHRONICLE ==========")
-    print("1. View Runs")
-    print("2. Replay Run")
-    print("3. Export Run")
-    print("4. Exit")
+    show_title()
+    show_menu()
 
     choice = input("\nEnter Choice: ")
 
     if choice == "1":
 
-        show_runs()
+        runs = get_runs(DB)
+
+        if not runs:
+            show_message("No execution runs found.", "red")
+            continue
+
+        print("\nAvailable Runs\n")
+
+        for run in runs:
+            print(f"Run ID : {run[0]}")
+            print(f"Script : {run[1]}")
+            print(f"Time   : {run[2]}")
+            print("-" * 40)
+
+        run_id = int(input("\nEnter Run ID: "))
+
+        steps = get_execution_steps(DB, run_id)
+
+        if not steps:
+            show_message("No execution steps found.", "red")
+            continue
+
+        print("\nExecution Steps\n")
+
+        for step in steps:
+            print(f"Step {step[0]} -> Line {step[1]}")
+
+        step_number = int(input("\nEnter Step Number: "))
+
+        variables = get_variables(
+            DB,
+            run_id,
+            step_number
+        )
+
+        print("\nVariables\n")
+
+        if variables:
+            for name, value in variables:
+                print(f"{name} = {value}")
+        else:
+            print("No variables recorded.")
 
     elif choice == "2":
 
-        run_id = int(input("Run ID : "))
+        run_id = int(input("Enter Run ID: "))
 
-        replay_trace(
-            DB,
-            run_id
-        )
+        replay_trace(DB, run_id)
 
     elif choice == "3":
 
-        run_id = int(input("Run ID : "))
+        run_id = int(input("Enter Run ID: "))
 
         export_to_json(
             DB,
@@ -56,11 +84,22 @@ while True:
             "trace.json"
         )
 
+        show_message(
+            "Trace exported successfully!",
+            "green"
+        )
+
     elif choice == "4":
 
-        print("Goodbye")
+        show_message(
+            "Thank you for using PyChronicle!",
+            "cyan"
+        )
         break
 
     else:
 
-        print("Invalid Choice")
+        show_message(
+            "Invalid choice. Please try again.",
+            "red"
+        )
