@@ -12,6 +12,7 @@ from pychronicle.viewer import (
 
 from pychronicle.replay import replay_trace
 from pychronicle.exporter import export_to_json
+from pychronicle.search import search_variable
 
 DB = "pychronicle.db"
 
@@ -23,6 +24,9 @@ while True:
 
     choice = input("\nEnter Choice: ")
 
+    # -------------------------------
+    # View Runs
+    # -------------------------------
     if choice == "1":
 
         runs = get_runs(DB)
@@ -31,7 +35,7 @@ while True:
             show_message("No execution runs found.", "red")
             continue
 
-        print("\nAvailable Runs\n")
+        print("\n========== AVAILABLE RUNS ==========\n")
 
         for run in runs:
             print(f"Run ID : {run[0]}")
@@ -47,7 +51,7 @@ while True:
             show_message("No execution steps found.", "red")
             continue
 
-        print("\nExecution Steps\n")
+        print("\n========== EXECUTION STEPS ==========\n")
 
         for step in steps:
             print(f"Step {step[0]} -> Line {step[1]}")
@@ -60,7 +64,7 @@ while True:
             step_number
         )
 
-        print("\nVariables\n")
+        print("\n========== VARIABLES ==========\n")
 
         if variables:
             for name, value in variables:
@@ -68,13 +72,51 @@ while True:
         else:
             print("No variables recorded.")
 
+    # -------------------------------
+    # Replay Trace
+    # -------------------------------
     elif choice == "2":
 
         run_id = int(input("Enter Run ID: "))
 
         replay_trace(DB, run_id)
 
+    # -------------------------------
+    # Search Variable
+    # -------------------------------
     elif choice == "3":
+
+        run_id = int(input("Enter Run ID: "))
+        variable_name = input("Enter Variable Name: ")
+
+        results = search_variable(
+            DB,
+            run_id,
+            variable_name
+        )
+
+        if results:
+
+            print("\n========== SEARCH RESULTS ==========\n")
+
+            for step, line, value in results:
+                print(
+                    f"Step {step} | "
+                    f"Line {line} | "
+                    f"{variable_name} = {value}"
+                )
+
+        else:
+
+            show_message(
+                "Variable not found.",
+                "red"
+            )
+
+    # -------------------------------
+    # Export JSON
+    # -------------------------------
+    elif choice == "4":
 
         run_id = int(input("Enter Run ID: "))
 
@@ -89,14 +131,21 @@ while True:
             "green"
         )
 
-    elif choice == "4":
+    # -------------------------------
+    # Exit
+    # -------------------------------
+    elif choice == "5":
 
         show_message(
             "Thank you for using PyChronicle!",
             "cyan"
         )
+
         break
 
+    # -------------------------------
+    # Invalid Choice
+    # -------------------------------
     else:
 
         show_message(

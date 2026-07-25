@@ -22,8 +22,9 @@ def show_menu():
 
     table.add_row("1", "View Runs")
     table.add_row("2", "Replay Trace")
-    table.add_row("3", "Export JSON")
-    table.add_row("4", "Exit")
+    table.add_row("3", "Search Variable")
+    table.add_row("4", "Export JSON")
+    table.add_row("5", "Exit")
 
     console.print(table)
 
