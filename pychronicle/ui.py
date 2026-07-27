@@ -1,6 +1,11 @@
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
+from rich.prompt import Prompt, Confirm, IntPrompt
+from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.align import Align
+from rich.rule import Rule
+import time
 
 console = Console()
 
@@ -8,26 +13,120 @@ console = Console()
 def show_title():
     console.print(
         Panel.fit(
-            "[bold cyan]PyChronicle[/bold cyan]\nExecution Trace System",
-            border_style="cyan"
+            "[bold cyan]PyChronicle[/bold cyan]\n[white]Execution Trace System[/white]",
+            border_style="cyan",
+            padding=(1, 6)
         )
     )
 
 
 def show_menu():
-    table = Table(title="Main Menu")
+    table = Table(
+        title="[bold cyan]Main Menu[/bold cyan]",
+        show_header=True,
+        header_style="bold magenta"
+    )
 
-    table.add_column("Option", style="green", justify="center")
-    table.add_column("Description", style="yellow")
+    table.add_column("Option", justify="center", style="green", width=10)
+    table.add_column("Feature", style="yellow", width=30)
 
     table.add_row("1", "View Runs")
     table.add_row("2", "Replay Trace")
     table.add_row("3", "Search Variable")
     table.add_row("4", "Export JSON")
-    table.add_row("5", "Exit")
+    table.add_row("5", "Help")
+    table.add_row("6", "About")
+    table.add_row("0", "Exit")
 
     console.print(table)
 
 
-def show_message(message, style="green"):
-    console.print(f"[{style}]{message}[/{style}]")
+def get_menu_choice():
+    while True:
+        try:
+            choice = IntPrompt.ask(
+                "[bold cyan]Select an option[/bold cyan]",
+                default=1
+            )
+
+            if choice in [0, 1, 2, 3, 4, 5, 6]:
+                return choice
+
+            show_error("Please choose a valid option.")
+
+        except Exception:
+            show_error("Invalid input. Enter a number.")
+
+
+def show_success(message):
+    console.print(f"[bold green]✓ {message}[/bold green]")
+
+
+def show_error(message):
+    console.print(f"[bold red]✗ {message}[/bold red]")
+
+
+def show_warning(message):
+    console.print(f"[bold yellow]! {message}[/bold yellow]")
+
+
+def show_info(message):
+    console.print(f"[bold cyan]{message}[/bold cyan]")
+
+
+def loading(message="Loading..."):
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True,
+    ) as progress:
+        progress.add_task(description=message, total=None)
+        time.sleep(2)
+
+
+def confirm_exit():
+    return Confirm.ask(
+        "[bold red]Are you sure you want to exit?[/bold red]"
+    )
+
+
+def show_help():
+    console.print(
+        Panel(
+            """[bold cyan]Help[/bold cyan]
+
+1 → View all execution runs
+2 → Replay execution trace
+3 → Search variable history
+4 → Export trace to JSON
+5 → Help
+6 → About
+0 → Exit application
+""",
+            title="User Guide",
+            border_style="green"
+        )
+    )
+
+
+def show_about():
+    console.print(
+        Panel.fit(
+            """[bold cyan]PyChronicle[/bold cyan]
+
+Execution Trace System
+
+Version : 1.0
+Developed using Python + Rich Library
+""",
+            border_style="blue"
+        )
+    )
+
+
+def divider():
+    console.print(Rule(style="cyan"))
+
+
+def pause():
+    Prompt.ask("\nPress Enter to continue")

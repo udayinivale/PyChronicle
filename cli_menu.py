@@ -1,101 +1,267 @@
-from rich import print
+from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
-from rich.console import Console
+from rich.prompt import Prompt, Confirm
+from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.rule import Rule
+import time
 
 console = Console()
 
-def display_menu():
-    
-    table = Table(
-        title="PYCHRONICLE UI", 
-        title_style="bold cyan", 
-        show_header=True, 
-        header_style="bold magenta"
+
+# -------------------------
+# Welcome Screen
+# -------------------------
+def show_welcome():
+    console.print(
+        Panel.fit(
+            "[bold cyan]PyChronicle[/bold cyan]\n"
+            "[green]Execution Trace System[/green]",
+            border_style="cyan",
+            padding=(1, 6),
+        )
     )
-    table.add_column("Key / Option", justify="center", style="green", width=14)
-    table.add_column("Action Description", justify="left", style="white")
+
+
+# -------------------------
+# Main Menu
+# -------------------------
+def display_menu():
+
+    table = Table(
+        title="PYCHRONICLE MAIN MENU",
+        title_style="bold cyan",
+        header_style="bold magenta",
+        show_header=True,
+    )
+
+    table.add_column("Option", justify="center", style="green", width=12)
+    table.add_column("Description", style="white")
 
     table.add_row("1", "Run Trace")
     table.add_row("2", "View Trace")
     table.add_row("3", "Replay Trace")
-    table.add_row("4 or 'h'", "Help Menu (Shortcut: h)")
-    table.add_row("5 or 'q'", "Exit Program (Shortcut: q)")
+    table.add_row("4", "Help")
+    table.add_row("5", "Project Statistics")
+    table.add_row("6", "About")
+    table.add_row("7", "Exit")
 
-    print("")  # Padding spacing
     console.print(table)
 
+    console.print(
+        "[dim]Shortcut Keys : h = Help | q = Exit[/dim]",
+        justify="center",
+    )
+
+
+# -------------------------
+# Loading Animation
+# -------------------------
+def loading(text):
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}")
+    ) as progress:
+
+        progress.add_task(description=text, total=None)
+        time.sleep(1.5)
+
+
+# -------------------------
+# Messages
+# -------------------------
+def success(msg):
+    console.print(f"[bold green]✓ {msg}[/bold green]")
+
+
+def error(msg):
+    console.print(f"[bold red]✗ {msg}[/bold red]")
+
+
+def warning(msg):
+    console.print(f"[bold yellow]! {msg}[/bold yellow]")
+
+
+# -------------------------
+# User Choice
+# -------------------------
 def get_choice():
-    """
-    Week 3 Day 3: Keyboard Shortcuts Handling
-    Supports number keys (1-5) and hotkeys ('h' for help, 'q' for quit).
-    """
-    # Shortcut mappings to internal choice numbers
-    SHORTCUTS = {
-        'h': 4,
-        'q': 5
+
+    shortcuts = {
+        "h": 4,
+        "q": 7
     }
 
     while True:
-        user_input = input("\nSelect option or shortcut (1-5, h, q): ").strip().lower()
 
-        if user_input == "":
-            print("[bold red]Error:[/bold red] Input cannot be empty.")
+        user = Prompt.ask(
+            "\n[bold cyan]Enter option[/bold cyan]"
+        ).strip().lower()
+
+        if user == "":
+            error("Input cannot be empty.")
             continue
 
-        # Check if the input matches a defined keyboard shortcut
-        if user_input in SHORTCUTS:
-            return SHORTCUTS[user_input]
+        if user in shortcuts:
+            return shortcuts[user]
 
-        # Check if the input is a valid number choice
-        if user_input.isdigit():
-            choice = int(user_input)
-            if 1 <= choice <= 5:
+        if user.isdigit():
+
+            choice = int(user)
+
+            if 1 <= choice <= 7:
                 return choice
-            else:
-                print("[bold red]Error:[/bold red] Please enter a number between 1 and 5.")
-                continue
 
-        print("[bold red]Error:[/bold red] Invalid input! Use 1-5, 'h' for help, or 'q' to quit.")
+            error("Choose between 1 and 7.")
 
+        else:
+
+            error("Invalid input.")
+
+
+# -------------------------
+# Help Screen
+# -------------------------
+def help_menu():
+
+    console.print(
+        Panel(
+            """
+[bold cyan]Help Menu[/bold cyan]
+
+1 → Run Trace
+2 → View Trace
+3 → Replay Trace
+4 → Help
+5 → Project Statistics
+6 → About
+7 → Exit
+
+Keyboard Shortcuts
+
+h → Help
+q → Quit
+""",
+            title="Help",
+            border_style="blue",
+        )
+    )
+
+
+# -------------------------
+# Statistics
+# -------------------------
+def statistics():
+
+    table = Table(title="Project Statistics")
+
+    table.add_column("Module", style="green")
+    table.add_column("Status", style="cyan")
+
+    table.add_row("Trace Engine", "Available")
+    table.add_row("Replay", "Available")
+    table.add_row("Viewer", "Available")
+    table.add_row("Export", "JSON")
+    table.add_row("Database", "SQLite")
+    table.add_row("Rich UI", "Enabled")
+
+    console.print(table)
+
+
+# -------------------------
+# About
+# -------------------------
+def about():
+
+    console.print(
+        Panel.fit(
+            """
+[bold cyan]PyChronicle[/bold cyan]
+
+Execution Trace System
+
+Version : 1.0
+
+Developed using
+
+• Python
+• Rich Library
+• SQLite
+""",
+            title="About",
+            border_style="green",
+        )
+    )
+
+
+# -------------------------
+# Choice Handler
+# -------------------------
 def process_choice(choice):
-    print("")  # Formatting separation spacing
-    
+
+    console.print()
+
     if choice == 1:
-        print("[yellow]Running Trace...[/yellow]")
+
+        loading("Running Trace...")
+        success("Trace completed successfully.")
 
     elif choice == 2:
-        print("[yellow]Opening Trace Viewer...[/yellow]")
+
+        loading("Opening Trace Viewer...")
+        success("Viewer opened.")
 
     elif choice == 3:
-        print("[yellow]Replaying Trace...[/yellow]")
+
+        loading("Replaying Trace...")
+        success("Replay completed.")
 
     elif choice == 4:
-        # Formatted help panel block
-        console.print(
-            Panel(
-                "[bold blue]Help Menu & Shortcuts[/bold blue]\n\n"
-                "• Options 1-3: Manage code execution traces.\n"
-                "• Press [bold green]'h'[/bold green] anytime for Help.\n"
-                "• Press [bold green]'q'[/bold green] anytime to Exit quickly.",
-                border_style="blue"
-            )
-        )
+
+        help_menu()
 
     elif choice == 5:
-        confirm = input("Are you sure you want to exit? (y/n): ").lower().strip()
 
-        if confirm == "y" or confirm == "q":
-            print("[bold green]Thank you for using PyChronicle![/bold green]")
+        statistics()
+
+    elif choice == 6:
+
+        about()
+
+    elif choice == 7:
+
+        if Confirm.ask(
+            "[bold red]Are you sure you want to exit?[/bold red]"
+        ):
+
+            success("Thank you for using PyChronicle.")
             return False
-        else:
-            print("[yellow]Returning to menu...[/yellow]")
+
+        warning("Returning to menu.")
 
     return True
 
-if __name__ == "__main__":
+
+# -------------------------
+# Main Program
+# -------------------------
+def main():
+
+    show_welcome()
+
     running = True
+
     while running:
+
+        console.print(Rule(style="cyan"))
+
         display_menu()
+
         choice = get_choice()
+
         running = process_choice(choice)
+
+
+if __name__ == "__main__":
+    main()
