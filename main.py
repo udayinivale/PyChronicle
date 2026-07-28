@@ -1,7 +1,12 @@
 from pychronicle.ui import (
     show_title,
     show_menu,
-    show_message
+    show_success,
+    show_error,
+    show_info,
+    show_help,
+    show_about,
+    confirm_exit
 )
 
 from pychronicle.viewer import (
@@ -14,9 +19,9 @@ from pychronicle.replay import replay_trace
 from pychronicle.exporter import export_to_json
 from pychronicle.search import search_variable
 from pychronicle.statistics import get_execution_statistics
+from pychronicle.history import delete_run
 
 DB = "pychronicle.db"
-
 
 while True:
 
@@ -25,15 +30,15 @@ while True:
 
     choice = input("\nEnter Choice: ")
 
-    # =====================================
+    # ==================================
     # 1. View Runs
-    # =====================================
+    # ==================================
     if choice == "1":
 
         runs = get_runs(DB)
 
         if not runs:
-            show_message("No execution runs found.", "red")
+            show_error("No execution runs found.")
             continue
 
         print("\n========== AVAILABLE RUNS ==========\n")
@@ -41,29 +46,49 @@ while True:
         for run in runs:
             print(f"Run ID : {run[0]}")
             print(f"Script : {run[1]}")
-            print(f"Time   : {run[2]}")
-            print("-" * 40)
+            print(f"Started: {run[2]}")
+            print("-" * 50)
 
-        run_id = int(input("\nEnter Run ID: "))
+        try:
+            run_id = int(input("\nEnter Run ID: "))
+        except ValueError:
+            show_error("Invalid Run ID.")
+            continue
 
         steps = get_execution_steps(DB, run_id)
 
         if not steps:
-            show_message("No execution steps found.", "red")
+            show_error("No execution steps found.")
             continue
 
         print("\n========== EXECUTION STEPS ==========\n")
 
         for step in steps:
-            print(f"Step {step[0]} -> Line {step[1]}")
+            print(
+                f"Step {step[1]} | "
+                f"Line {step[2]} | "
+                f"Function: {step[3]} | "
+                f"Event: {step[4]}"
+            )
 
-        step_number = int(input("\nEnter Step Number: "))
+        try:
+            step_number = int(input("\nEnter Step Number: "))
+        except ValueError:
+            show_error("Invalid Step Number.")
+            continue
 
-        variables = get_variables(
-            DB,
-            run_id,
-            step_number
-        )
+        step_id = None
+
+        for step in steps:
+            if step[1] == step_number:
+                step_id = step[0]
+                break
+
+        if step_id is None:
+            show_error("Step not found.")
+            continue
+
+        variables = get_variables(DB, step_id)
 
         print("\n========== VARIABLES ==========\n")
 
@@ -73,59 +98,46 @@ while True:
         else:
             print("No variables recorded.")
 
-    # =====================================
+    # ==================================
     # 2. Replay Trace
-    # =====================================
+    # ==================================
     elif choice == "2":
 
         run_id = int(input("Enter Run ID: "))
-
         replay_trace(DB, run_id)
 
-    # =====================================
+    # ==================================
     # 3. Search Variable
-    # =====================================
+    # ==================================
     elif choice == "3":
 
         run_id = int(input("Enter Run ID: "))
-        variable_name = input("Enter Variable Name: ")
+        variable = input("Variable Name: ")
 
-        results = search_variable(
-            DB,
-            run_id,
-            variable_name
-        )
+        results = search_variable(DB, run_id, variable)
 
         if results:
 
             print("\n========== SEARCH RESULTS ==========\n")
 
             for step, line, value in results:
-
                 print(
                     f"Step {step} | "
                     f"Line {line} | "
-                    f"{variable_name} = {value}"
+                    f"{variable} = {value}"
                 )
 
         else:
+            show_error("Variable not found.")
 
-            show_message(
-                "Variable not found.",
-                "red"
-            )
-
-    # =====================================
-    # 4. Execution Statistics
-    # =====================================
+    # ==================================
+    # 4. Statistics
+    # ==================================
     elif choice == "4":
 
         run_id = int(input("Enter Run ID: "))
 
-        stats = get_execution_statistics(
-            DB,
-            run_id
-        )
+        stats = get_execution_statistics(DB, run_id)
 
         print("\n========== EXECUTION STATISTICS ==========\n")
 
@@ -133,9 +145,9 @@ while True:
         print(f"Total Variables  : {stats['total_variables']}")
         print(f"Unique Variables : {stats['unique_variables']}")
 
-    # =====================================
+    # ==================================
     # 5. Export JSON
-    # =====================================
+    # ==================================
     elif choice == "5":
 
         run_id = int(input("Enter Run ID: "))
@@ -146,29 +158,52 @@ while True:
             "trace.json"
         )
 
-        show_message(
-            "Trace exported successfully!",
-            "green"
-        )
+        show_success("Trace exported successfully.")
 
-    # =====================================
-    # 6. Exit
-    # =====================================
+    # ==================================
+    # 6. Delete Run
+    # ==================================
     elif choice == "6":
 
-        show_message(
-            "Thank you for using PyChronicle!",
-            "cyan"
-        )
+        run_id = int(input("Enter Run ID to delete: "))
 
-        break
+        confirm = input(
+            "Are you sure? (yes/no): "
+        ).lower()
 
-    # =====================================
-    # Invalid Choice
-    # =====================================
+        if confirm == "yes":
+
+            delete_run(DB, run_id)
+            show_success("Execution run deleted successfully.")
+
+        else:
+            show_info("Deletion cancelled.")
+
+    # ==================================
+    # 7. Help
+    # ==================================
+    elif choice == "7":
+
+        show_help()
+
+    # ==================================
+    # 8. About
+    # ==================================
+    elif choice == "8":
+
+        show_about()
+
+    # ==================================
+    # 0. Exit
+    # ==================================
+    elif choice == "0":
+
+        if confirm_exit():
+            show_info("Thank you for using PyChronicle!")
+            break
+
+    # ==================================
+    # Invalid Option
+    # ==================================
     else:
-
-        show_message(
-            "Invalid choice. Please try again.",
-            "red"
-        )
+        show_error("Invalid choice. Please try again.")
