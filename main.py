@@ -13,6 +13,7 @@ from pychronicle.viewer import (
 from pychronicle.replay import replay_trace
 from pychronicle.exporter import export_to_json
 from pychronicle.search import search_variable
+from pychronicle.statistics import get_execution_statistics
 
 DB = "pychronicle.db"
 
@@ -24,9 +25,9 @@ while True:
 
     choice = input("\nEnter Choice: ")
 
-    # -------------------------------
-    # View Runs
-    # -------------------------------
+    # =====================================
+    # 1. View Runs
+    # =====================================
     if choice == "1":
 
         runs = get_runs(DB)
@@ -72,18 +73,18 @@ while True:
         else:
             print("No variables recorded.")
 
-    # -------------------------------
-    # Replay Trace
-    # -------------------------------
+    # =====================================
+    # 2. Replay Trace
+    # =====================================
     elif choice == "2":
 
         run_id = int(input("Enter Run ID: "))
 
         replay_trace(DB, run_id)
 
-    # -------------------------------
-    # Search Variable
-    # -------------------------------
+    # =====================================
+    # 3. Search Variable
+    # =====================================
     elif choice == "3":
 
         run_id = int(input("Enter Run ID: "))
@@ -100,6 +101,7 @@ while True:
             print("\n========== SEARCH RESULTS ==========\n")
 
             for step, line, value in results:
+
                 print(
                     f"Step {step} | "
                     f"Line {line} | "
@@ -113,10 +115,28 @@ while True:
                 "red"
             )
 
-    # -------------------------------
-    # Export JSON
-    # -------------------------------
+    # =====================================
+    # 4. Execution Statistics
+    # =====================================
     elif choice == "4":
+
+        run_id = int(input("Enter Run ID: "))
+
+        stats = get_execution_statistics(
+            DB,
+            run_id
+        )
+
+        print("\n========== EXECUTION STATISTICS ==========\n")
+
+        print(f"Total Steps      : {stats['total_steps']}")
+        print(f"Total Variables  : {stats['total_variables']}")
+        print(f"Unique Variables : {stats['unique_variables']}")
+
+    # =====================================
+    # 5. Export JSON
+    # =====================================
+    elif choice == "5":
 
         run_id = int(input("Enter Run ID: "))
 
@@ -131,10 +151,10 @@ while True:
             "green"
         )
 
-    # -------------------------------
-    # Exit
-    # -------------------------------
-    elif choice == "5":
+    # =====================================
+    # 6. Exit
+    # =====================================
+    elif choice == "6":
 
         show_message(
             "Thank you for using PyChronicle!",
@@ -143,9 +163,9 @@ while True:
 
         break
 
-    # -------------------------------
+    # =====================================
     # Invalid Choice
-    # -------------------------------
+    # =====================================
     else:
 
         show_message(

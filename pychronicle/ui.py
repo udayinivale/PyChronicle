@@ -33,12 +33,16 @@ def show_menu():
     table.add_row("1", "View Runs")
     table.add_row("2", "Replay Trace")
     table.add_row("3", "Search Variable")
-    table.add_row("4", "Export JSON")
-    table.add_row("5", "Help")
-    table.add_row("6", "About")
+    table.add_row("4","Execution Statistics")
+    table.add_row("5", "Export JSON")
+    table.add_row("6", "Help")
+    table.add_row("7", "About")
     table.add_row("0", "Exit")
 
     console.print(table)
+
+def show_message(message, style="green"):
+    console.print(f"[{style}]{message}[/{style}]")
 
 
 def get_menu_choice():
