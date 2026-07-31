@@ -1,8 +1,12 @@
 from rich.console import Console
+from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 <<<<<<< HEAD
-from rich.console import Console
+from rich.prompt import Prompt, Confirm
+from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.rule import Rule
+import time
 from rich.align import Align
 =======
 from rich.prompt import Prompt, Confirm
@@ -44,10 +48,15 @@ def show_instructions():
 
 def display_menu():
 
+
     table = Table(
         title="PYCHRONICLE UI",
         title_style="bold cyan",
         header_style="bold magenta"
+        title="PYCHRONICLE MAIN MENU",
+        title_style="bold cyan",
+        header_style="bold magenta",
+        show_header=True,
     )
 
     table.add_column("Key / Option", justify="center", style="green", width=15)
@@ -143,6 +152,44 @@ def warning(msg):
 # User Choice
 # -------------------------
 >>>>>>> 1dd32feda7e1d6c5d61e9ba225055581ebc501d5
+    console.print(
+        "[dim]Shortcut Keys : h = Help | q = Exit[/dim]",
+        justify="center",
+    )
+
+
+# -------------------------
+# Loading Animation
+# -------------------------
+def loading(text):
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}")
+    ) as progress:
+
+        progress.add_task(description=text, total=None)
+        time.sleep(1.5)
+
+
+# -------------------------
+# Messages
+# -------------------------
+def success(msg):
+    console.print(f"[bold green]✓ {msg}[/bold green]")
+
+
+def error(msg):
+    console.print(f"[bold red]✗ {msg}[/bold red]")
+
+
+def warning(msg):
+    console.print(f"[bold yellow]! {msg}[/bold yellow]")
+
+
+# -------------------------
+# User Choice
+# -------------------------
 def get_choice():
 
     shortcuts = {
@@ -153,8 +200,14 @@ def get_choice():
 
     while True:
 
+        user = Prompt.ask(
+            "\n[bold cyan]Enter option[/bold cyan]"
+        ).strip().lower()
+
         user_input = input("Select option (1-5, h, q): ").strip().lower()
 
+        if user == "":
+            error("Input cannot be empty.")
         if user_input == "":
             print("[bold red]Input cannot be empty.[/bold red]")
             continue
@@ -261,9 +314,9 @@ def process_choice(choice):
 
             return False
 
-        else:
 
-            print("[yellow]Returning to menu...[/yellow]")
+
+        warning("Returning to menu.")
 =======
         "q": 7
     }
@@ -420,7 +473,14 @@ def process_choice(choice):
 
 
 <<<<<<< HEAD
-if __name__ == "__main__":
+
+# -------------------------
+# Main Program
+# -------------------------
+def main():
+
+    show_welcome()
+
 
     show_welcome()
 
@@ -444,16 +504,26 @@ def main():
         console.print(Rule(style="cyan"))
 
 >>>>>>> 1dd32feda7e1d6c5d61e9ba225055581ebc501d5
+
+        console.print(Rule(style="cyan"))
+
         display_menu()
+
 
         choice = get_choice()
 
 <<<<<<< HEAD
         running = process_choice(choice)
 =======
+
         running = process_choice(choice)
 
 
 if __name__ == "__main__":
     main()
 >>>>>>> 1dd32feda7e1d6c5d61e9ba225055581ebc501d5
+
+
+
+if __name__ == "__main__":
+    main()
