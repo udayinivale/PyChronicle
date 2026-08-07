@@ -23,6 +23,7 @@ from pychronicle.history import delete_run
 from pychronicle.run_details import get_run_details
 from pychronicle.compare import compare_runs
 from pychronicle.compare_variables import compare_variables
+from pychronicle.timeline import get_execution_timeline
 
 DB = "pychronicle.db"
 
@@ -251,6 +252,21 @@ while True:
                 print(f"  Run 2: {diff['run2']}")
         else:
             show_success("No differences found.")
+
+    # ==================================
+    # 12. Execution Timeline
+    # ==================================
+    elif choice == "12":
+
+        run_id = int(input("Enter Run ID: "))
+        timeline = get_execution_timeline("pychronicle.db", run_id)
+
+        if timeline:
+            print(f"\n========== EXECUTION TIMELINE ==========")
+            for item in timeline:
+                print(f"Step {item['step']}: Line {item['line']}")
+        else:
+            show_error("No execution steps found.")
 
     # ==================================
     # 0. Exit

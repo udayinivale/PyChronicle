@@ -41,6 +41,7 @@ def show_menu():
     table.add_row("9", "Run Details")
     table.add_row("10", "Compare Runs")
     table.add_row("11", "Compare Variables")
+    table.add_row("12", "Execution Timeline")
     table.add_row("0", "Exit")
 
     console.print(table)
@@ -54,7 +55,7 @@ def get_menu_choice():
                 default=1,
             )
 
-            if choice in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]:
+            if choice in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]:
                 return choice
 
             show_error("Please choose a valid option.")
@@ -115,6 +116,7 @@ def show_help():
 9 → View details of a specific run
 10 → Compare execution runs
 11 → Compare variables
+12 → View execution timeline
 0 → Exit application
 """,
             title="User Guide",
