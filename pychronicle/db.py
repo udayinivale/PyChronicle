@@ -1,76 +1,180 @@
 import sqlite3
 import time
-from typing import List, Dict, Any, Tuple, Optional
 
-def get_connection(db_path: str) -> sqlite3.Connection:
-    """Helper function to open a connection to the SQLite database."""
+
+def get_connection(db_path):
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
 
+
 # ==========================================
-# WEEK 1 - DAY 1: Create Database Schema
+# Initialize Database
 # ==========================================
-def init_db(db_path: str):
-    """Initializes the database connection, enables foreign key constraints,
-    and calls table creation routines."""
+def init_db(db_path):
     conn = get_connection(db_path)
-    try:
-        # Enable Foreign Key support in SQLite
-        conn.execute("PRAGMA foreign_keys = ON;")
-        
-        # Call table creation functions (Day 2)
-        _create_tables(conn)
-        _create_indexes(conn)
-        
-        conn.commit()
-    finally:
-        conn.close()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS runs(
+        run_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        script_path TEXT,
+        started_at TEXT
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS execution_steps(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        run_id INTEGER,
+        step_number INTEGER,
+        line_number INTEGER,
+        function_name TEXT,
+        event TEXT
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS variables(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        run_id INTEGER,
+        step_number INTEGER,
+        variable_name TEXT,
+        variable_value TEXT
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
 
 # ==========================================
-# WEEK 1 - DAY 2: Add Tables & Indexes
+# Create Run
 # ==========================================
-def _create_tables(conn: sqlite3.Connection):
-    """Creates all required tables for tracking runs, steps, and variables."""
-    
-    # 1. Table to store execution runs
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS runs (
-            run_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            script_path TEXT NOT NULL,
-            started_at TEXT NOT NULL
-        );
-    """)
-    
-    # 2. Table to store line-by-line execution steps
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS steps (
-            step_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            run_id INTEGER NOT NULL,
-            step_number INTEGER NOT NULL,
-            line_number INTEGER NOT NULL,
-            function_name TEXT NOT NULL,
-            event TEXT NOT NULL,
-            timestamp REAL NOT NULL,
-            FOREIGN KEY(run_id) REFERENCES runs(run_id) ON DELETE CASCADE
-        );
-    """)
+def create_run(db_path, script_path):
+    conn = get_connection(db_path)
+    cursor = conn.cursor()
 
-    # 3. Table to store variable state mutations (deltas)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS variable_states (
-            state_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            step_id INTEGER NOT NULL,
-            variable_name TEXT NOT NULL,
-            variable_type TEXT NOT NULL,
-            serialized_value TEXT NOT NULL,
-            is_delta INTEGER DEFAULT 1,
-            FOREIGN KEY(step_id) REFERENCES steps(step_id) ON DELETE CASCADE
-        );
-    """)
+    started_at = time.strftime("%Y-%m-%d %H:%M:%S")
 
-def _create_indexes(conn: sqlite3.Connection):
-    """Creates performance indexes for fast step and variable querying."""
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_steps_run ON steps(run_id, step_number);")
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_var_states_step ON variable_states(step_id);")
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_var_states_lookup ON variable_states(variable_name, step_id);")
+    cursor.execute(
+        """
+        INSERT INTO runs(script_path, started_at)
+        VALUES(?, ?)
+        """,
+        (
+            script_path,
+            started_at
+        )
+    )
+
+    conn.commit()
+
+    run_id = cursor.lastrowid
+
+    conn.close()
+
+    return run_id
+
+
+# ==========================================
+# Insert Execution Step
+# ==========================================
+def insert_step(
+    db_path,
+    run_id,
+    step_number,
+    line_number,
+    function_name="",
+    event="line"
+):
+
+    conn = get_connection(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        INSERT INTO execution_steps(
+            run_id,
+            step_number,
+            line_number,
+            function_name,
+            event
+        )
+        VALUES(?,?,?,?,?)
+        """,
+        (
+            run_id,
+            step_number,
+            line_number,
+            function_name,
+            event
+        )
+    )
+
+    conn.commit()
+    conn.close()
+
+
+# ==========================================
+# Insert Variables
+# ==========================================
+def insert_variables(
+    db_path,
+    run_id,
+    step_number,
+    variables
+):
+
+    conn = get_connection(db_path)
+    cursor = conn.cursor()
+
+    for name, value in variables.items():
+
+        cursor.execute(
+            """
+            INSERT INTO variables(
+                run_id,
+                step_number,
+                variable_name,
+                variable_value
+            )
+            VALUES(?,?,?,?)
+            """,
+            (
+                run_id,
+                step_number,
+                name,
+                str(value)
+            )
+        )
+
+    conn.commit()
+    conn.close()
+
+
+# ==========================================
+# Delete Run
+# ==========================================
+def delete_run(db_path, run_id):
+
+    conn = get_connection(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "DELETE FROM variables WHERE run_id=?",
+        (run_id,)
+    )
+
+    cursor.execute(
+        "DELETE FROM execution_steps WHERE run_id=?",
+        (run_id,)
+    )
+
+    cursor.execute(
+        "DELETE FROM runs WHERE run_id=?",
+        (run_id,)
+    )
+
+    conn.commit()
+    conn.close()

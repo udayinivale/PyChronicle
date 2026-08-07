@@ -6,6 +6,7 @@ from . import db
 
 
 class PyChronicleTracer:
+
     def __init__(self, script_path, db_path):
         self.script_path = os.path.abspath(script_path)
         self.db_path = db_path
@@ -15,31 +16,44 @@ class PyChronicleTracer:
         db.init_db(self.db_path)
 
     def _make_serializable(self, obj):
-        """
-        Convert objects into JSON-serializable values.
-        """
-        try:
-            json.dumps(obj)
+
+        if isinstance(obj, (int, float, str, bool)):
             return obj
-        except TypeError:
-            if isinstance(obj, dict):
-                return {
-                    str(k): self._make_serializable(v)
-                    for k, v in obj.items()
-                }
 
-            elif isinstance(obj, (list, tuple, set)):
-                return [
-                    self._make_serializable(v)
-                    for v in obj
-                ]
+        if obj is None:
+            return None
 
-            return repr(obj)
+        if isinstance(obj, list):
+            return [self._make_serializable(x) for x in obj]
+
+        if isinstance(obj, tuple):
+            return [self._make_serializable(x) for x in obj]
+
+        if isinstance(obj, dict):
+            return {
+                str(k): self._make_serializable(v)
+                for k, v in obj.items()
+            }
+
+        if isinstance(obj, set):
+            return [
+                self._make_serializable(x)
+                for x in obj
+            ]
+
+        return repr(obj)
 
     def serialize_value(self, value):
-        return json.dumps(self._make_serializable(value))
+
+        try:
+            return json.dumps(
+                self._make_serializable(value)
+            )
+        except Exception:
+            return repr(value)
 
     def trace_execution(self):
+
         self.run_id = db.create_run(
             self.db_path,
             self.script_path
@@ -47,7 +61,12 @@ class PyChronicleTracer:
 
         self.step_number = 0
 
-        with open(self.script_path, "r", encoding="utf-8") as file:
+        with open(
+            self.script_path,
+            "r",
+            encoding="utf-8"
+        ) as file:
+
             source = file.read()
 
         code = compile(
@@ -57,22 +76,28 @@ class PyChronicleTracer:
         )
 
         def trace(frame, event, arg):
+
             if event != "line":
                 return trace
 
-            # Ignore tracing this package itself
-            filename = os.path.abspath(frame.f_code.co_filename)
+            filename = os.path.abspath(
+                frame.f_code.co_filename
+            )
+
             if filename != self.script_path:
                 return trace
 
             self.step_number += 1
 
             db.insert_step(
-            self.db_path,
-            self.run_id,
-            self.step_number,
-            frame.f_lineno
-        )
+                self.db_path,
+                self.run_id,
+                self.step_number,
+                frame.f_lineno,
+                frame.f_code.co_name,
+                event
+            )
+
             variables = {}
 
             for name, value in frame.f_locals.items():
@@ -80,10 +105,7 @@ class PyChronicleTracer:
                 if name.startswith("__"):
                     continue
 
-                try:
-                    variables[name] = self.serialize_value(value)
-                except Exception:
-                    variables[name] = json.dumps("<unavailable>")
+                variables[name] = self.serialize_value(value)
 
             db.insert_variables(
                 self.db_path,
@@ -103,6 +125,6 @@ class PyChronicleTracer:
         sys.settrace(trace)
 
         try:
-            exec(code, globals_dict)
+            exec(code, globals_dict, globals_dict)
         finally:
             sys.settrace(None)
