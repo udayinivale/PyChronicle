@@ -20,6 +20,7 @@ from pychronicle.exporter import export_to_json
 from pychronicle.search import search_variable
 from pychronicle.statistics import get_execution_statistics
 from pychronicle.history import delete_run
+from pychronicle.run_details import get_run_details
 
 DB = "pychronicle.db"
 
@@ -192,6 +193,25 @@ while True:
     elif choice == "8":
 
         show_about()
+
+
+    # ==================================
+    # 9. Run Details
+    # ==================================
+    elif choice == "9":
+
+        run_id = int(input("Enter Run ID: "))
+        details = get_run_details("pychronicle.db", run_id)
+
+        if details:
+            print(f"\n========== RUN DETAILS ==========")
+            print(f"Run ID: {details['run_id']}")
+            print(f"Script Path: {details['script_path']}")
+            print(f"Started At: {details['started_at']}")
+            print(f"Total Steps: {details['total_steps']}")
+            print(f"Total Variables: {details['total_variables']}")
+        else:
+            show_error("Run not found.")
 
     # ==================================
     # 0. Exit
