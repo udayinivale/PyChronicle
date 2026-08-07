@@ -24,6 +24,7 @@ from pychronicle.run_details import get_run_details
 from pychronicle.compare import compare_runs
 from pychronicle.compare_variables import compare_variables
 from pychronicle.timeline import get_execution_timeline
+from pychronicle.report import generate_report
 
 DB = "pychronicle.db"
 
@@ -267,6 +268,19 @@ while True:
                 print(f"Step {item['step']}: Line {item['line']}")
         else:
             show_error("No execution steps found.")
+
+    # ==================================
+    # 13. Generate Execution Report
+    # ==================================
+    elif choice == "13":
+
+        run_id = int(input("Enter Run ID: "))
+
+        try:
+            generate_report("pychronicle.db", run_id)
+            show_success("Execution report generated successfully.")
+        except Exception as e:
+            show_error(f"Failed to generate execution report.\n{e}")
 
     # ==================================
     # 0. Exit
