@@ -25,6 +25,7 @@ from pychronicle.compare import compare_runs
 from pychronicle.compare_variables import compare_variables
 from pychronicle.timeline import get_execution_timeline
 from pychronicle.report import generate_report
+from pychronicle.validator import validate_project
 
 DB = "pychronicle.db"
 
@@ -281,6 +282,17 @@ while True:
             show_success("Execution report generated successfully.")
         except Exception as e:
             show_error(f"Failed to generate execution report.\n{e}")
+
+    # ==================================
+    # 14. Project Validation
+    # ==================================
+    elif choice == "14":
+
+        report = validate_project("pychronicle.db")
+        print(f"\n========== PROJECT VALIDATION ==========")
+        print(f"Database Exists: {report['database_exists']}")
+        print(f"Total Runs: {report['total_runs']}")
+        print(f"Status: {report['status']}")
 
     # ==================================
     # 0. Exit
