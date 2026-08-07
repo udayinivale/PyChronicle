@@ -22,6 +22,7 @@ from pychronicle.statistics import get_execution_statistics
 from pychronicle.history import delete_run
 from pychronicle.run_details import get_run_details
 from pychronicle.compare import compare_runs
+from pychronicle.compare_variables import compare_variables
 
 DB = "pychronicle.db"
 
@@ -227,6 +228,25 @@ while True:
             print(f"\n========== COMPARISON RESULTS ==========")
             for diff in differences:
                 print(f"Step {diff['step']}:")
+                print(f"  Run 1: {diff['run1']}")
+                print(f"  Run 2: {diff['run2']}")
+        else:
+            show_success("No differences found.")
+
+    # ==================================
+    # 11. Compare Variables
+    # ==================================
+    elif choice == "11":
+
+        run1 = int(input("Enter First Run ID: "))
+        run2 = int(input("Enter Second Run ID: "))
+        differences = compare_variables("pychronicle.db", run1, run2)
+
+        if differences:
+            print(f"\n========== COMPARISON RESULTS ==========")
+            for diff in differences:
+                print(f"Step {diff['step']}:")
+                print(f"  Variable: {diff['variable']}")
                 print(f"  Run 1: {diff['run1']}")
                 print(f"  Run 2: {diff['run2']}")
         else:
