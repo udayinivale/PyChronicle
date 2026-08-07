@@ -39,6 +39,7 @@ def show_menu():
     table.add_row("7", "Help")
     table.add_row("8", "About")
     table.add_row("9", "Run Details")
+    table.add_row("10", "Compare Runs")
     table.add_row("0", "Exit")
 
     console.print(table)
@@ -52,7 +53,7 @@ def get_menu_choice():
                 default=1,
             )
 
-            if choice in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]:
+            if choice in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
                 return choice
 
             show_error("Please choose a valid option.")
@@ -111,6 +112,7 @@ def show_help():
 7 → View Help
 8 → About PyChronicle
 9 → View details of a specific run
+10 → Compare execution runs
 0 → Exit application
 """,
             title="User Guide",
@@ -136,6 +138,7 @@ Features
 • Statistics
 • Delete execution history
 • Run details
+• Compare runs
 
 Developed using Python + SQLite + Rich
 """,

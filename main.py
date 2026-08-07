@@ -21,6 +21,7 @@ from pychronicle.search import search_variable
 from pychronicle.statistics import get_execution_statistics
 from pychronicle.history import delete_run
 from pychronicle.run_details import get_run_details
+from pychronicle.compare import compare_runs
 
 DB = "pychronicle.db"
 
@@ -212,6 +213,24 @@ while True:
             print(f"Total Variables: {details['total_variables']}")
         else:
             show_error("Run not found.")
+
+    # ==================================
+    # 10. Compare Runs
+    # ==================================
+    elif choice == "10":
+
+        run1 = int(input("Enter First Run ID: "))
+        run2 = int(input("Enter Second Run ID: "))
+        differences = compare_runs("pychronicle.db", run1, run2)
+
+        if differences:
+            print(f"\n========== COMPARISON RESULTS ==========")
+            for diff in differences:
+                print(f"Step {diff['step']}:")
+                print(f"  Run 1: {diff['run1']}")
+                print(f"  Run 2: {diff['run2']}")
+        else:
+            show_success("No differences found.")
 
     # ==================================
     # 0. Exit
